@@ -1,0 +1,39 @@
+# Python and virtual environments
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*secret*
+*credential*
+
+# Temporary and operating-system files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Confidential run data and generated artifacts (keep folder markers and documentation)
+data/input/*
+!data/input/.gitkeep
+data/reference/*
+!data/reference/.gitkeep
+output/*
+!output/README.md
+runs/*
+!runs/README.md
