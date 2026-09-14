@@ -90,8 +90,10 @@ El precómputo recorre la referencia una sola vez, tarda cerca de un minuto y
 deja `cache/distribucion_edad.csv`. Verifica además que el agrupamiento etario
 de la referencia siga siendo el inspeccionado, y falla si cambió.
 
-**60 tests.** Los de cálculo son sintéticos y corren en un clon limpio. Los que
-dependen de datos locales se saltean solos.
+**83 tests.** Los de cálculo y los de anonimización son sintéticos y corren en un
+clon limpio; 17 dependen de datos locales y se saltean solos. Los 23 de
+[`tests/test_anonimizacion.py`](tests/test_anonimizacion.py) fijan cada fuga de
+confidencialidad que se encontró, con datos inventados.
 
 ## Datos
 
@@ -135,6 +137,22 @@ Eso permite afirmar que dos corridas usaron el mismo código sin atribuirlas a u
 commit que no las contiene. La huella está en
 [`corridas/<caso>/huella_codigo.json`](corridas/).
 
+**Cómo verificarla, y una limitación que apareció al revisarla.** El hash es
+sobre los bytes del archivo, así que depende del final de línea con que el clon
+lo materialice. El árbol desde el que se corrieron las tres corridas tenía
+finales de línea mezclados —nueve archivos con LF y nueve con CRLF—, así que un
+clon en Windows con la configuración por defecto convierte todo a CRLF y **nueve
+de las dieciocho verificaciones fallan**, aunque el contenido sea idéntico.
+[`.gitattributes`](.gitattributes) fija ahora el final de línea archivo por
+archivo para reproducir esos bytes exactos. Con eso las dieciocho verifican en
+un clon limpio; sin eso, verificaban solo en la máquina del autor.
+
+El `digest_codigo` agregado **no** se reproduce desde el repositorio, y eso no
+tiene arreglo: se calcula sobre `scripts/*.py`, y `scripts/preparar_corridas.py`
+se agregó después de las tres corridas, así que hoy el glob encuentra diecinueve
+archivos donde la huella tiene dieciocho. Los dieciocho hashes individuales sí
+verifican, y son los que importan.
+
 Cada manifiesto guarda además el sha256 de cada archivo de entrada, de la tabla
 de escenarios y del cache de distribución etaria.
 
@@ -150,7 +168,10 @@ el CLI. No hay estimaciones inventadas ni comparaciones con otros modelos.
 | C | 2 | 90.296 | 18 | 44.662 | 45.616 | 8.005 | 0,1666 |
 | **Total** | **10** | **412.363** | **90** | **184.193** | **228.080** | **38.883** | **0,7099** |
 
-Promedio por corrida: **USD 0,2366**, 128 segundos, 3,3 llamadas.
+Promedio por corrida: **USD 0,2366**, 118 segundos de llamadas al modelo, 3,3
+llamadas. Los 118 segundos son la suma de `duracion_ms` de las llamadas, que es
+lo único que la evidencia pública permite recalcular; la corrida completa tarda
+algo más, porque además lee los archivos.
 
 ### Cómo leer estas cifras
 
@@ -174,18 +195,22 @@ Promedio por corrida: **USD 0,2366**, 128 segundos, 3,3 llamadas.
 Con fórmulas y supuestos explícitos, porque el volumen real no me consta.
 
 ```
-costo_anual ≈ L × R × c
+costo_anual   ≈ L × R × c
+costo_semanal ≈ costo_anual / 52
 
 L = licitaciones por año
 R = corridas por licitación (≥ 1: cada corrección humana vía overrides re-corre)
 c = costo estimado por corrida = USD 0,2366   (medido, n = 3)
 ```
 
-| L | R | Costo anual estimado (USD) |
-| --- | --- | --- |
-| 12 | 2 | 5,68 |
-| 50 | 2 | 23,66 |
-| 100 | 3 | 70,98 |
+| L | R | Costo semanal estimado (USD) | Costo anual estimado (USD) |
+| --- | --- | --- | --- |
+| 12 | 2 | 0,11 | 5,68 |
+| 50 | 2 | 0,46 | 23,66 |
+| 100 | 3 | 1,36 | 70,98 |
+
+El costo semanal es un promedio, no un gasto parejo: las licitaciones llegan
+por tandas y una semana con tres licitaciones cuesta lo que tres corridas.
 
 Supuestos: que el costo por corrida se mantiene, que las licitaciones futuras
 tienen un volumen de fuentes comparable, y que el precio de lista no cambia.
@@ -196,9 +221,15 @@ ilustrativos.
 
 `claude-haiku-4-5`, el más chico disponible en el backend. Las tareas que hace
 el agente son clasificación y extracción estructurada sobre texto acotado, no
-razonamiento de varios pasos. Resolvió correctamente las 35 fuentes de las tres
-licitaciones, incluidos los casos difíciles. No probé modelos mayores: **no hay
-comparación medida** y no afirmo que un modelo más grande no mejoraría algo.
+razonamiento de varios pasos. Clasificó las 35 fuentes de las tres licitaciones
+sin dejar ninguna sin rol, incluidos los casos difíciles. **Una de las 35 quedó
+con un rol discutible**: a una planilla del Caso B le asignó «cotización interna
+posterior» con confianza media, y el calificativo «posterior» no corresponde
+porque el archivo es anterior a la invitación a cotizar. No cambia ningún número
+—no aporta población ni texto de cobertura— pero el rol está mal y quedó para
+revisión humana; ver la entrada «Dos revisiones de fuentes antes de la entrega»
+en [DECISIONES.md](DECISIONES.md). No probé modelos mayores: **no hay comparación
+medida** y no afirmo que un modelo más grande no mejoraría algo.
 
 ## Gobierno y riesgo
 
@@ -299,8 +330,8 @@ cumplido**.
 | Cifras de población | Son el tamaño de la cartera de un cliente identificable en una licitación viva. No hay autorización para difundirlas. |
 | Corridas originales en `runs/` | Los manifiestos traen nombres de archivo con el cliente. |
 
-Quitar nombres no alcanza para anonimizar. Durante la revisión aparecieron tres
-fugas que el mapa de seudónimos no cubría:
+Quitar nombres no alcanza para anonimizar. Durante la primera revisión
+aparecieron tres fugas que el mapa de seudónimos no cubría:
 
 1. Un nombre de persona **con acento** que el mapa tenía sin acento.
 2. Un **diferencial de precio** que el modelo citó al justificar una
@@ -310,6 +341,47 @@ fugas que el mapa de seudónimos no cubría:
 
 Las tres están corregidas. La tercera es la más instructiva: el dato no estaba
 en ningún campo llamado «población».
+
+### Segunda revisión, antes de publicar (2026-09-14)
+
+Una auditoría posterior encontró que arreglar el anonimizador no había alcanzado,
+porque **la prosa escrita a mano no pasa por el anonimizador**. Cinco fugas más,
+en material que ya estaba versionado:
+
+1. **Los totales de una licitación, en `DECISIONES.md`.** El total mal calculado
+   que se citaba como ejemplo de una falla era exactamente nueve veces la
+   población, porque el bug sumaba las nueve alternativas de plan. Publicarlo
+   equivalía a publicar el tamaño de la cartera dividiendo por nueve.
+2. **Un conteo de personas en `docs/handoff_v0.md`,** en la descripción de la
+   Prueba 1, en un documento que en su propia sección 13 declara estar libre de
+   volúmenes reales.
+3. **El diferencial de precio real, en un comentario del código** que implementa
+   el arreglo de la fuga 2 de la lista anterior. La cifra que el anonimizador
+   tapa en la evidencia quedó escrita en el archivo que la tapa.
+4. **La organización propia y un cargo interno** en la evidencia del Caso B. El
+   mapa de seudónimos cubría clientes y personas, no la organización propia ni
+   los cargos. Un cargo identifica a una persona dentro de un área chica.
+5. **Fecha exacta y tamaño exacto de cada archivo** en `corridas/*/entrada.md`.
+   No son datos personales, pero son una huella: cruzados con el buzón del
+   equipo alcanzan para identificar la licitación. Ahora se publica año-mes y un
+   tramo de magnitud.
+
+   **El sha256 que queda no anonimiza.** Es un identificador unívoco del archivo
+   original. Sirve para que quien tenga acceso autorizado al archivo verifique
+   que la corrida usó exactamente ese archivo, y también permite a un tercero
+   que sospeche de un archivo concreto confirmar o descartar la sospecha
+   comparando el hash. Expone menos que el nombre, la fecha exacta y el tamaño
+   exactos; no es anonimato, y no se presenta como tal.
+
+Las cinco están corregidas y hay
+[pruebas sintéticas](tests/test_anonimizacion.py) que las fijan. La lección es
+distinta de la anterior: el anonimizador cubre lo que genera, y lo que se
+escribe a mano no lo cubre nadie.
+
+**Esto no es una declaración de riesgo cero.** Las fugas se encontraron con
+búsqueda de patrones —cifras largas, correos, rutas, nombres conocidos— y esa
+técnica encuentra lo que sabe buscar. La fuga 1 no la habría encontrado ninguna
+expresión regular: hacía falta entender que el número era divisible por nueve.
 
 ### Cómo puede revisar los originales un evaluador autorizado
 
@@ -336,7 +408,9 @@ todavía no está otorgada:
    manifiesto y en `corridas/<caso>/entrada.md`, y cada prompt y respuesta tiene
    su sha256 en `corridas/<caso>/llamadas_modelo.json`. El evaluador puede
    confirmar que lo que ve en privado es exactamente lo que la evidencia pública
-   describe, sin que nada confidencial haya salido del equipo.
+   describe. Los hashes son lo único que salió del equipo, y no son anónimos:
+   identifican unívocamente cada archivo para cualquiera que ya lo tenga o que
+   quiera confirmar una sospecha sobre uno. Ningún contenido salió.
 5. La huella de código (`huella_codigo.json`) permite verificar que la corrida
    revisada usó el código publicado.
 
@@ -345,7 +419,7 @@ así está declarado.
 
 ## Documentación
 
-- [DECISIONES.md](DECISIONES.md) — la historia del proceso: 21 entradas con
+- [DECISIONES.md](DECISIONES.md) — la historia del proceso: 24 entradas con
   iteraciones, hipótesis refutadas, errores y correcciones.
 - [docs/handoff_v0.md](docs/handoff_v0.md) — contrato de implementación.
 - [prompts/](prompts/) — los contratos del agente realmente usados.

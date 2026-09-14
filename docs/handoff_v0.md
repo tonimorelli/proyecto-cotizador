@@ -249,7 +249,9 @@ Homologación del área metropolitana:
 - Buenos Aires a secas, cuando la fuente distingue en otra fila el AMBA o el GBA, va a BUENOS AIRES.
 - Buenos Aires a secas, cuando la fuente no distingue, va a AMBA.
 
-Cuando la fuente trae localidad además de provincia, la localidad resuelve la ambigüedad mediante un catálogo de partidos del AMBA. El catálogo vive versionado en el repositorio y su aplicación se declara en Supuestos.
+Cuando la fuente trae localidad además de provincia, la localidad puede resolver la ambigüedad mediante un catálogo de partidos del AMBA.
+
+**Estado real: no implementado en V0.** `catalogos.homologar_provincia` acepta el resultado de ese catálogo en el parámetro `localidad_es_amba` y lo prioriza sobre la heurística, y hay un test que fija ese comportamiento. Pero **el catálogo de partidos no existe en el repositorio y ningún paso del pipeline provee ese parámetro**: hoy la ambigüedad se resuelve siempre con `fuente_distingue_amba`. Una versión anterior de esta sección decía que el catálogo «vive versionado en el repositorio»; era falso y se corrigió el 2026-09-14. Queda como pendiente en la sección 12.
 
 La referencia no tiene provincia, así que no hay distribución de respaldo desde la referencia. Cuando una parte de la población tiene provincia observada y otra no, se aplica la regla de la sección 6.9.
 
@@ -503,6 +505,7 @@ Ninguno bloquea el arranque de la implementación.
 3. **Fórmulas de situ en el futuro.** Los factores 0,9 y 1,1 están embebidos en el archivo. Si se van a tocar, conviene decidir si viven en el Excel o en configuración.
 4. **Rangos etarios recibidos que no coinciden con los grupos de la referencia.** La regla de distribución está definida, pero falta probarla contra un rango que cruce los límites de los grupos.
 5. **Provincias ambiguas.** La regla cubre Buenos Aires contra AMBA. Faltan los casos que aparezcan en las pruebas.
+5.1. **Catálogo de partidos del AMBA.** No implementado. La interfaz existe (`localidad_es_amba`) y está probada, pero falta el catálogo y falta que el pipeline lo consulte. Ver sección 6.5.
 6. **Organización interna de las hojas.** Cuando una hoja lleva varias tablas, falta definir separación y encabezados.
 7. **Reincorporar imágenes** cuando exista una licitación real que las requiera.
 8. **Extensión opcional.** Cruzar las carteras con la tabla de costo médico esperado. No es parte de V0 y su tabla resumen todavía no debe diseñarse.

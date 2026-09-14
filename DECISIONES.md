@@ -424,12 +424,14 @@ Este archivo registra las decisiones reales tomadas durante el desarrollo. No de
 
 1. **El total de licitación sumaba las alternativas de plan.** Devolvía nueve veces la población real, porque acumulaba las nueve alternativas como si fueran poblaciones distintas. Peor: la prueba que lo cubría comparaba contra esa misma suma, así que consagraba el error en vez de detectarlo. Lo detectó el responsable del proyecto leyendo el resumen, no el código.
 
-   Reproducido en un caso sintético, que es el que quedó como test de regresión: una licitación **inventada** de 100 personas sin plan informado devolvía 900. Los totales reales de la licitación no se publican: como el total mal calculado era exactamente nueve veces la población, publicarlo equivale a publicar el tamaño de la cartera dividiendo por nueve.
+   Reproducido en un caso sintético, que es el que quedó como test de regresión: una licitación **inventada** de 100 personas sin plan informado devolvía 900.
 
 2. **El control de cierre por fila comparaba un agregado contra una fila individual.** En un padrón individual muchas personas comparten la clave (edad, provincia, plan), así que el agregado por clave es mayor que cualquiera de sus filas. El control levantó `ErrorDeCierre` en la primera corrida real y no dejó producir el Excel. Funcionó como debía: un error de software falló ruidosamente.
 3. **Se concluyó que el Caso C no tenía detalles de cobertura** habiendo revisado únicamente la grilla de cotización. El comparativo de planes del mismo caso tiene decenas de miles de caracteres de detalle de cobertura repartidos en doce hojas. Lo detectó el responsable del proyecto.
 
 Hubo además un error de verificación, no de producto: al releer el Excel para validarlo se usó un desplazamiento de encabezado equivocado, se perdieron dos filas y el total informado quedó por debajo del correcto. El archivo siempre estuvo bien; el informe no.
+
+> **Nota de la revisión de publicación (2026-09-14).** Esta entrada tenía los totales reales de una de las licitaciones. Como el total mal calculado era exactamente nueve veces la población, publicarlo equivalía a publicar el tamaño de la cartera dividiendo por nueve. Los totales se reemplazaron por su descripción y por un caso sintético. La falla y cómo se encontró se conservan intactas: lo que se quitó son las cifras, no la historia.
 
 **Problema encontrado:** Los controles automáticos atrapan lo que saben mirar. Un total mal definido, una conclusión sacada de material incompleto y un script de verificación mal escrito los encontró una persona.
 
@@ -566,3 +568,45 @@ Hubo además un error de verificación, no de producto: al releer el Excel para 
 **Impacto en el sistema:** El sistema no aprueba nada por sí mismo: produce, declara y se detiene. Queda documentado en el README.
 
 **Tema abierto:** Si el sistema pasa a uso regular, revisar si el rol que firma debe ser el del área de Cotizaciones Corporate en lugar del autor.
+
+## 2026-09-14 — Publicación: el repositorio ya estaba empujado y la prosa tenía fugas
+
+**Versión / etapa:** V0 / publicación
+
+**Contexto:** Antes de entregar el link se pidió una auditoría independiente del repositorio, con el mandato de decidir si era publicable. La auditoría revisó los cuatro commits, los 61 blobs de toda la historia y el estado de `.git`.
+
+**Hipótesis:** Que el repositorio estaba listo para publicar, y que la entrada «Evidencia pública» del 2026-09-13 había cerrado el tema de confidencialidad al arreglar el anonimizador.
+
+**Qué probé:** Búsqueda de correos, rutas absolutas, nombres de empresa y de persona, credenciales y toda cifra de cuatro o más dígitos sobre el contenido de los 61 blobs; lectura completa de la prosa; verificación de la huella de código contra el árbol; `git fsck` sobre los objetos locales; y `git bundle create --all` para medir qué transferiría realmente un push.
+
+**Qué ocurrió:** Tres hallazgos que la hipótesis no contemplaba.
+
+1. **El remoto ya existía y ya se había empujado.** `origin` apunta a GitHub y `refs/remotes/origin/main` coincide con `HEAD`. La entrada «Política de datos y de documentación» del 2026-09-13 dice «no hay remoto configurado», y era cierto ese día: el push fue después. Esa afirmación se conserva con su fecha, porque describe el estado en que se tomó la decisión, no el estado de hoy.
+
+2. **Cinco fugas en material escrito a mano.** El anonimizador arreglado el 2026-09-13 procesa lo que el script genera. No procesa `DECISIONES.md`, ni el handoff, ni los comentarios del código. Las cinco están listadas en el README, sección «Limitaciones de la evidencia pública». La más instructiva: el total mal calculado que esta bitácora citaba como ejemplo de una falla era nueve veces la población, así que la cifra confidencial se recuperaba dividiendo por nueve. Ninguna expresión regular iba a encontrar eso.
+
+   La tercera es la más incómoda: el diferencial de precio real quedó escrito en un comentario del propio archivo que lo redacta. Arreglar la fuga y documentarla en el mismo lugar volvió a filtrarla.
+
+3. **117 MB del corpus real como objetos inalcanzables en `.git`,** de un `git add` deshecho: padrones, pliegos, mails con nombres y correos de personas, e imágenes. El «Tema abierto» de la entrada del 2026-09-13 que decía limpiarlos nunca se cerró. `git bundle create --all` da 106 KB y no contiene ninguno de esos dominios, así que un `push` o un `clone` por red no los transfiere; pero cualquier copia del directorio sí.
+
+**Problema encontrado:** La política de datos era correcta y la implementación también, pero ninguna de las dos cubría el texto que una persona escribe para explicar la política. Y el saneamiento de `.git` quedó declarado como pendiente y sin hacer, en un repositorio que entretanto se publicó.
+
+**Decisión:** Sanear antes de volver a publicar, en este orden. (1) Quitar de la prosa toda cifra comercial y toda cantidad reconstruible, reemplazando los ejemplos reales por ejemplos sintéticos rotulados como tales. (2) Extender el anonimizador a la organización propia y a los cargos internos, arreglar el orden de reemplazo de correos y la expresión regular de rutas Windows, y reducir fecha y tamaño de la evidencia a año-mes y tramo de magnitud. (3) Fijar cada fuga con una prueba sintética. (4) Reescribir el commit de la entrega, que es el único que tiene fugas: los tres anteriores se verificaron limpios y no se tocan. (5) Purgar los objetos inalcanzables de `.git`.
+
+Los pasos 4 y 5 quedan **preparados y sin ejecutar**: reescribir la historia publicada y purgar objetos son acciones irreversibles y requieren autorización explícita del responsable.
+
+**Alternativas descartadas:** Dejar las cifras y confiar en que nadie divida por nueve. Borrar las entradas de bitácora que contenían las cifras, que habría destruido la historia del proceso para tapar un dato. Regenerar `corridas/` desde `runs/`, que habría tocado los originales privados sin necesidad: la reducción de metadatos se aplicó sobre el artefacto ya publicado.
+
+**Motivo:** Un incumplimiento declarado es aceptable; un dato personal publicado no se retira. Y la historia académica es el corazón de la nota, así que se conserva completa: se quitaron cifras, no episodios.
+
+**Impacto en el sistema:** El anonimizador cubre cuatro categorías nuevas y tiene 23 pruebas propias. La evidencia pública pierde precisión de fecha y tamaño, y conserva el sha256, que es lo que permite verificar. Ningún archivo de los 18 que integran `huella_codigo.json` se modificó, así que las tres corridas siguen siendo verificables contra el código publicado.
+
+**Correcciones pedidas al revisar esta propuesta (2026-09-14).** Dos afirmaciones propias quedaron cortas y se corrigieron antes de publicar.
+
+1. **El ejemplo de formato del README traía una cantidad real** de una corrida: un decimal de catorce cifras. No revela población, pero es una huella y no hay razón para publicarlo. Se reemplazó por un valor inventado, rotulado como tal, y se quitó también del commit de la entrega.
+
+2. **Se había afirmado que el sha256 «permite la misma verificación sin ese riesgo».** Es falso: el sha256 no anonimiza nada. Es un identificador unívoco del archivo original. Le sirve a quien tiene acceso autorizado para verificar que la corrida usó ese archivo, y le sirve igual a un tercero que sospeche de un archivo concreto para confirmar o descartar la sospecha comparando el hash. Expone menos que el nombre, la fecha exacta y el tamaño exacto, y por eso se publica; pero decir que elimina el riesgo era presentar una reducción como una garantía. Corregido en el README, en las tres `corridas/*/entrada.md` y en el generador.
+
+La segunda es del mismo tipo que las fugas que esta entrada documenta: una afirmación de seguridad más fuerte que la evidencia que la respalda.
+
+**Tema abierto:** La autorización para reescribir la historia del remoto y para purgar `.git`. Confirmar si el repositorio estuvo en público y por cuánto tiempo: el equipo no tiene salida a internet y no se pudo verificar desde acá. Si estuvo público, evaluar si corresponde notificar según la Ley 25.326.

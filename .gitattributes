@@ -1,2 +1,35 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# --- Finales de linea de los archivos hasheados en huella_codigo.json ---
+#
+# corridas/<caso>/huella_codigo.json guarda el sha256 de cada archivo de
+# codigo y de prompt tal como estaba en disco al correr. El hash es sobre
+# los bytes,
+# asi que depende del final de linea con que el clon materialice el
+# archivo. El arbol desde el que se corrieron las tres corridas tenia
+# finales mezclados, y sin estas reglas un clon en Windows convierte todo
+# a CRLF y la mitad de las verificaciones falla aunque el contenido sea
+# identico. Las reglas de abajo reproducen exactamente esos bytes.
+#
+# No son una preferencia de estilo: son lo que hace verificable la huella.
+
+prompts/system_prompt.md text eol=lf
+prompts/user_prompt.md text eol=lf
+prompts/user_prompt_coberturas.md text eol=lf
+prompts/user_prompt_columnas.md text eol=lf
+scripts/precomputar_referencia.py text eol=lf
+src/cotizador/__init__.py text eol=lf
+src/cotizador/escenarios.py text eol=lf
+src/cotizador/normalizacion.py text eol=lf
+src/cotizador/salida.py text eol=lf
+
+scripts/procesar_licitacion.py text eol=crlf
+src/cotizador/agente.py text eol=crlf
+src/cotizador/agregados.py text eol=crlf
+src/cotizador/cartera.py text eol=crlf
+src/cotizador/catalogos.py text eol=crlf
+src/cotizador/fuentes.py text eol=crlf
+src/cotizador/pipeline.py text eol=crlf
+src/cotizador/pipeline_agregado.py text eol=crlf
+src/cotizador/referencia.py text eol=crlf
