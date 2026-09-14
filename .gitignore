@@ -3,3 +3,24 @@
 __pycache__/
 .DS_Store
 Thumbs.db
+
+# Datos reales. Nunca entran al repositorio.
+# Decision del 2026-09-13: ver DECISIONES.md
+Ejemplos input de cotizaciones/
+Referencia/
+output/
+runs/
+
+# Archivos de bloqueo de Excel
+~$*
+
+# Salidas y cache locales
+*.parquet
+cache/
+
+# Documentacion interna: nombres de clientes y cifras reales
+docs/interno/
+
+# Mapa de anonimizacion: contiene los nombres reales de cliente.
+# Lo consume scripts/preparar_corridas.py. Nunca se commitea.
+anonimizacion.local.json

@@ -1,0 +1,27 @@
+{
+  "version_codigo": "v2",
+  "digest_codigo": "44e29de205d0366be74cde51857e27c96ea1fb340ce48c8846730235ab17b32c",
+  "archivos": {
+    "prompts/system_prompt.md": "d4f44901982d329081e2827f0ab04fb5f6e8ab536603bc765435d1b84c5d4849",
+    "prompts/user_prompt.md": "a79b062bf6d66bdfe392b6f1e5f35dbf1b493bd56aeccdc4cc0935f412e1bbcc",
+    "prompts/user_prompt_coberturas.md": "05dd32f72df01cd2cd5318a7eec12c39841f30d1766f4e853d5a0093f9d47035",
+    "prompts/user_prompt_columnas.md": "231bd2028bfc7ff109edbc8f5247772147378720d5337c3167d361e529aa9af4",
+    "scripts/precomputar_referencia.py": "ad8c636d415db7b76563e7f0fecf9a9614283fd5ae19dcc0ccd86a0abb473c83",
+    "scripts/procesar_licitacion.py": "c9452c8fca47f747595bbb69712ae96e71e0bb2e71a4f65a8c7e6ef3d8e3ad6a",
+    "src/cotizador/__init__.py": "e2c0e0c974bc17bbb8da9f711f0936f40908fc6e97793f003cff53539f9db2f1",
+    "src/cotizador/agente.py": "93bc02914dcb0ff58c8864f8451fa90e30994fabfc3a6ab733dfc43365fdf7df",
+    "src/cotizador/agregados.py": "77273b620b5235807a892bcc216dc6d73bea7f0ddd22b5d696902630703b954a",
+    "src/cotizador/cartera.py": "e3341d68af1952f47995461cfc3fa72e3dfa5bda8913bbf9e42f11ce42965827",
+    "src/cotizador/catalogos.py": "e7460990e2fa276660721ca6decdce068df078042028d78576b3985d267c2eb0",
+    "src/cotizador/escenarios.py": "a5ff7fa80984e18bee8f83e3f602738a2c9b14d07869cda3803e633f3ebe307d",
+    "src/cotizador/fuentes.py": "eae1c9b3a6d04b0f4c3e33e01205abc9ffe33e23c9d555f277ab48979e1ee264",
+    "src/cotizador/normalizacion.py": "5147a6aa0e0d95edf15d2b9e960e07d48539ffeeaf48ef573f5792c6dbe61463",
+    "src/cotizador/pipeline.py": "a5791c77cd9cee9c5d57cb6dbed613e3f80d6d488d5aab406d9255ad4c608414",
+    "src/cotizador/pipeline_agregado.py": "293b0c910fce9ee0192a0fbf720d1ccb737f3a2eb6c4a5116df5bd0597ea0a38",
+    "src/cotizador/referencia.py": "2e3b186a8f9c89567649a34124b4efae24cd6c9873b01f56517380768b5a462e",
+    "src/cotizador/salida.py": "1d3c172ac18b1fc475d3ca1f3351bbd10a87d291f437ecbbc14c8e0cb432ff98"
+  },
+  "git_sha": "99816926db4ac450fc527cbb660f37c944a2eff2",
+  "git_arbol_limpio": false,
+  "nota": "El git_sha identifica el ultimo commit, no el codigo de esta corrida: el arbol tiene cambios sin commitear."
+}
